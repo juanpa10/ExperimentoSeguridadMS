@@ -1,0 +1,39 @@
+services:
+  gateway:
+    build:
+      context: ./asr11-gateway
+    image: asr11-experiment-gateway:local
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRET=secret123
+      - PRODUCTS_API=http://products-api:8081
+    depends_on:
+      - products-api
+
+  products-api:
+    build:
+      context: ./asr11-products-api
+    image: asr11-experiment-products:local
+    ports:
+      - "8081:8081"
+    environment:
+      - DB_PATH=/data/audit.db
+      - WEBHOOK_URL=http://webhook:8082/alert
+    volumes:
+      - products_data:/data
+    depends_on:
+      - webhook
+
+  webhook:
+    build:
+      context: ./asr11-webhook
+    image: asr11-experiment-webhook:local
+    ports:
+      - "8082:8082"
+    volumes:
+      - webhook_data:/data
+
+volumes:
+  products_data:
+  webhook_data:
